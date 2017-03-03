@@ -1,0 +1,20 @@
+{
+  "name": "spqr/sitemap",
+  "version": "1.0.0",
+  "type": "pagekit-extension",
+  "title": "Sitemap Generator",
+  "description": "Generates a sitemap",
+  "license": "MIT",
+  "authors": [
+    {
+      "name": "Roman Lossin-Beßler",
+      "homepage": "https://spqr.wtf"
+    }
+  ],
+  "extra": {
+    "icon": "icon.svg",
+    "scripts": "scripts.php"
+  },
+  "require": {
+  }
+}

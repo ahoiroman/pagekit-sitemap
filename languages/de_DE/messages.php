@@ -1,5 +1,5 @@
 <?php return [
-	'Sitemap Settings'                                                                                   => 'Sitemap-Einstellungen',
+	'Sitemap Settings'                                                                                   => 'Einstellungen',
 	'Exclusions'                                                                                         => 'Ausschlüsse',
 	'Frequency'                                                                                          => 'Häufigkeit',
 	'Daily'                                                                                              => 'Täglich',

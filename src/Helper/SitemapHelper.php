@@ -44,6 +44,11 @@ class SitemapHelper
 	 */
 	private $agent;
 	
+	/**
+	 * @var
+	 */
+	private $pf;
+	
 	
 	/**
 	 * SitemapHelper constructor.

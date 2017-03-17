@@ -45,6 +45,11 @@ class SitemapHelper
 	private $agent;
 	
 	/**
+	 * @var array
+	 */
+	private $urls;
+	
+	/**
 	 * @var
 	 */
 	private $pf;
@@ -66,6 +71,7 @@ class SitemapHelper
 		$this->outputfile             = $config[ 'filename' ];
 		$this->site                   = $protocol . $domain;
 		$this->skip_urls              = $config[ 'excluded' ];
+		$this->urls                   = [];
 		$this->frequency              = $config[ 'frequency' ];
 		$this->priority               = 0.5;
 		$this->ignoreemptycontenttype = false;
@@ -73,6 +79,11 @@ class SitemapHelper
 		$this->agent                  = "Mozilla/5.0 (compatible; SPQR Sitemap Generator/" . $this->version . ")";
 	}
 	
+	/**
+	 * @param $url
+	 *
+	 * @return mixed
+	 */
 	private function getPage( $url )
 	{
 		$ch = curl_init( $url );
@@ -86,6 +97,11 @@ class SitemapHelper
 		return $data;
 	}
 	
+	/**
+	 * @param $str
+	 *
+	 * @return string
+	 */
 	private function getQuotedUrl( $str )
 	{
 		$quote = substr( $str, 0, 1 );
@@ -107,6 +123,11 @@ class SitemapHelper
 		return $ret;
 	}
 	
+	/**
+	 * @param $anchor
+	 *
+	 * @return string
+	 */
 	private function getHrefValue( $anchor )
 	{
 		$split1      = explode( "href=", $anchor );
@@ -124,6 +145,11 @@ class SitemapHelper
 		return $url;
 	}
 	
+	/**
+	 * @param $url
+	 *
+	 * @return mixed
+	 */
 	private function getEffectiveUrl( $url )
 	{
 		$ch = curl_init( $url );
@@ -140,10 +166,14 @@ class SitemapHelper
 		return $effective_url;
 	}
 	
+	/**
+	 * @param $url_base
+	 * @param $url
+	 *
+	 * @return bool|mixed|string
+	 */
 	private function validateUrl( $url_base, $url )
 	{
-		global $scanned;
-		
 		$parsed_url = parse_url( $url );
 		
 		$scheme = $parsed_url[ "scheme" ];
@@ -188,12 +218,17 @@ class SitemapHelper
 		
 		$url = $this->getEffectiveUrl( $url );
 		
-		if ( in_array( $url, $scanned ) )
+		if ( in_array( $url, $this->urls ) )
 			return false;
 		
 		return $url;
 	}
 	
+	/**
+	 * @param $url
+	 *
+	 * @return bool
+	 */
 	private function skipUrl( $url )
 	{
 		if ( isset ( $this->skip_urls ) ) {
@@ -206,11 +241,14 @@ class SitemapHelper
 		return false;
 	}
 	
+	/**
+	 * @param $url
+	 *
+	 * @return bool
+	 */
 	private function scan( $url )
 	{
-		global $scanned;
-		
-		$scanned[] = $url;
+		$this->urls[] = $url;
 		
 		if ( $this->skipUrl( $url ) ) {
 			return false;
@@ -302,6 +340,9 @@ class SitemapHelper
 		return true;
 	}
 	
+	/**
+	 * @return bool
+	 */
 	public function generate()
 	{
 		define( "SITE_SCHEME", parse_url( $this->site, PHP_URL_SCHEME ) );
@@ -312,7 +353,7 @@ class SitemapHelper
 		$this->pf = fopen( $this->outputfile, "w" );
 		
 		if ( !$this->pf ) {
-			return;
+			return false;
 		}
 		
 		fwrite(
@@ -320,7 +361,6 @@ class SitemapHelper
 			"<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" . "<!-- Created with SPQR Sitemap Generator " . $this->version . " https://spqr.wtf -->\n" . "<urlset xmlns=\"http://www.sitemaps.org/schemas/sitemap/0.9\"\n" . "        xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"\n" . "        xsi:schemaLocation=\"http://www.sitemaps.org/schemas/sitemap/0.9\n" . "        http://www.sitemaps.org/schemas/sitemap/0.9/sitemap.xsd\">\n" . "  <url>\n" . "    <loc>" . $this->site . "/</loc>\n" . "    <changefreq>" . $this->frequency . "</changefreq>\n" . "  </url>\n"
 		);
 		
-		$scanned = [];
 		$this->scan( $this->getEffectiveUrl( $this->site ) );
 		
 		fwrite( $this->pf, "</urlset>\n" );

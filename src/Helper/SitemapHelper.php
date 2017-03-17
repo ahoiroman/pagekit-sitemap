@@ -261,7 +261,6 @@ class SitemapHelper
 			$url = substr( $url, 0, -1 );
 		}
 		
-		
 		$headers = get_headers( $url, 1 );
 		
 		if ( strpos( $headers[ 0 ], "404" ) !== false ) {

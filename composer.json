@@ -1,6 +1,6 @@
 {
   "name": "spqr/sitemap",
-  "version": "1.0.1",
+  "version": "1.0.4",
   "type": "pagekit-extension",
   "title": "Sitemap Generator",
   "description": "Generates a sitemap",
@@ -16,5 +16,6 @@
     "scripts": "scripts.php"
   },
   "require": {
+    "sunra/php-simple-html-dom-parser": "1.5.2"
   }
 }

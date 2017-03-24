@@ -3,6 +3,7 @@
 namespace Spqr\Sitemap\Helper;
 
 use Pagekit\Application as App;
+use Sunra\PhpSimple\HtmlDomParser;
 
 
 /**
@@ -31,10 +32,12 @@ class SitemapHelper
 	 * @var float
 	 */
 	private $priority;
+	
 	/**
-	 * @var bool
+	 * @var array
 	 */
-	private $ignoreemptycontenttype;
+	private $extensions;
+	
 	/**
 	 * @var string
 	 */
@@ -48,6 +51,11 @@ class SitemapHelper
 	 * @var array
 	 */
 	private $urls;
+	
+	/**
+	 * @var array
+	 */
+	private $scanned;
 	
 	/**
 	 * @var
@@ -68,15 +76,58 @@ class SitemapHelper
 		$module = App::module( 'sitemap' );
 		$config = $module->config;
 		
-		$this->outputfile             = $config[ 'filename' ];
-		$this->site                   = $protocol . $domain;
-		$this->skip_urls              = $config[ 'excluded' ];
-		$this->urls                   = [];
-		$this->frequency              = $config[ 'frequency' ];
-		$this->priority               = 0.5;
-		$this->ignoreemptycontenttype = false;
-		$this->version                = "1.0";
-		$this->agent                  = "Mozilla/5.0 (compatible; SPQR Sitemap Generator/" . $this->version . ")";
+		$this->outputfile = $config[ 'filename' ];
+		$this->site       = $protocol . $domain . '/';
+		$this->skip_urls  = $config[ 'excluded' ];
+		$this->urls       = [];
+		$this->scanned    = [];
+		$this->frequency  = $config[ 'frequency' ];
+		$this->priority   = 0.5;
+		$this->extensions = [
+			".html",
+			".php",
+			"/",
+		];
+		$this->version    = "2.0";
+		$this->agent      = "Mozilla/5.0 (compatible; SPQR Sitemap Generator/" . $this->version . ")";
+	}
+	
+	/**
+	 * @param $rel
+	 * @param $base
+	 *
+	 * @return string
+	 */
+	private function rel2abs( $rel, $base )
+	{
+		if ( strpos( $rel, "//" ) === 0 ) {
+			return "http:" . $rel;
+		}
+		/* return if  already absolute URL */
+		if ( parse_url( $rel, PHP_URL_SCHEME ) != '' )
+			return $rel;
+		$first_char = substr( $rel, 0, 1 );
+		/* queries and  anchors */
+		if ( $first_char == '#' || $first_char == '?' )
+			return $base . $rel;
+		/* parse base URL  and convert to local variables:
+		$scheme, $host,  $path */
+		extract( parse_url( $base ) );
+		/* remove  non-directory element from path */
+		$path = preg_replace( '#/[^/]*$#', '', $path );
+		/* destroy path if  relative url points to root */
+		if ( $first_char == '/' )
+			$path = '';
+		/* dirty absolute  URL */
+		$abs = "$host$path/$rel";
+		/* replace '//' or  '/./' or '/foo/../' with '/' */
+		$re = [ '#(/.?/)#', '#/(?!..)[^/]+/../#' ];
+		for ( $n = 1; $n > 0; $abs = preg_replace( $re, '/', $abs, -1, $n ) ) {
+		}
+		
+		/* absolute URL is  ready! */
+		
+		return $scheme . '://' . $abs;
 	}
 	
 	/**
@@ -84,11 +135,19 @@ class SitemapHelper
 	 *
 	 * @return mixed
 	 */
-	private function getPage( $url )
+	private function getURL( $url )
 	{
-		$ch = curl_init( $url );
-		curl_setopt( $ch, CURLOPT_RETURNTRANSFER, 1 );
+		$ch = curl_init();
+		curl_setopt( $ch, CURLOPT_AUTOREFERER, true );
+		curl_setopt( $ch, CURLOPT_URL, $url );
 		curl_setopt( $ch, CURLOPT_USERAGENT, $this->agent );
+		curl_setopt( $ch, CURLOPT_VERBOSE, 1 );
+		curl_setopt( $ch, CURLOPT_SSL_VERIFYPEER, false );
+		curl_setopt( $ch, CURLOPT_SSL_VERIFYHOST, false );
+		curl_setopt( $ch, CURLOPT_HEADER, 0 );
+		curl_setopt( $ch, CURLOPT_FOLLOWLOCATION, 1 );
+		curl_setopt( $ch, CURLOPT_RETURNTRANSFER, 1 );
+		curl_setopt( $ch, CURLOPT_CONNECTTIMEOUT, 5 );
 		
 		$data = curl_exec( $ch );
 		
@@ -98,269 +157,138 @@ class SitemapHelper
 	}
 	
 	/**
-	 * @param $str
-	 *
-	 * @return string
-	 */
-	private function getQuotedUrl( $str )
-	{
-		$quote = substr( $str, 0, 1 );
-		if ( ( $quote != "\"" ) && ( $quote != "'" ) ) {
-			return $str;
-		}
-		
-		$ret = "";
-		$len = strlen( $str );
-		for ( $i = 1; $i < $len; $i++ ) {
-			$ch = substr( $str, $i, 1 );
-			
-			if ( $ch == $quote )
-				break;
-			
-			$ret .= $ch;
-		}
-		
-		return $ret;
-	}
-	
-	/**
-	 * @param $anchor
-	 *
-	 * @return string
-	 */
-	private function getHrefValue( $anchor )
-	{
-		$split1      = explode( "href=", $anchor );
-		$split2      = explode( ">", $split1[ 1 ] );
-		$href_string = $split2[ 0 ];
-		
-		$first_ch = substr( $href_string, 0, 1 );
-		if ( $first_ch == "\"" || $first_ch == "'" ) {
-			$url = $this->getQuotedUrl( $href_string );
-		} else {
-			$spaces_split = explode( " ", $href_string );
-			$url          = $spaces_split[ 0 ];
-		}
-		
-		return $url;
-	}
-	
-	/**
 	 * @param $url
-	 *
-	 * @return mixed
 	 */
-	private function getEffectiveUrl( $url )
+	function scan( $url )
 	{
-		$ch = curl_init( $url );
+		$url = filter_var( $url, FILTER_SANITIZE_URL );
 		
-		curl_setopt( $ch, CURLOPT_FOLLOWLOCATION, 1 );
-		curl_setopt( $ch, CURLOPT_RETURNTRANSFER, 1 );
-		curl_setopt( $ch, CURLOPT_USERAGENT, $this->agent );
-		curl_exec( $ch );
+		if ( !filter_var( $url, FILTER_VALIDATE_URL ) || in_array( $url, $this->scanned ) ) {
+			return;
+		}
 		
-		$effective_url = curl_getinfo( $ch, CURLINFO_EFFECTIVE_URL );
+		array_push( $this->scanned, $url );
+		$html = HtmlDomParser::str_get_html( $this->getURL( $url ) );
+		$a1   = $html->find( 'a' );
 		
-		curl_close( $ch );
-		
-		return $effective_url;
-	}
-	
-	/**
-	 * @param $url_base
-	 * @param $url
-	 *
-	 * @return bool|mixed|string
-	 */
-	private function validateUrl( $url_base, $url )
-	{
-		$parsed_url = parse_url( $url );
-		
-		$scheme = $parsed_url[ "scheme" ];
-		
-		if ( ( $scheme != SITE_SCHEME ) && ( $scheme != "" ) )
-			return false;
-		
-		$host = $parsed_url[ "host" ];
-		
-		if ( ( $host != SITE_HOST ) && ( $host != "" ) )
-			return false;
-		
-		
-		if ( $host == "" ) {
-			if ( substr( $url, 0, 1 ) == '#' ) {
-				return false;
+		foreach ( $a1 as $val ) {
+			$next_url = $val->href or "";
+			
+			$fragment_split = explode( "#", $next_url );
+			$next_url       = $fragment_split[ 0 ];
+			
+			if ( ( substr( $next_url, 0, 7 ) != "http://" ) && ( substr( $next_url, 0, 8 ) != "https://" ) && ( substr(
+				                                                                                                    $next_url,
+				                                                                                                    0,
+				                                                                                                    6
+			                                                                                                    ) != "ftp://" ) && ( substr(
+				                                                                                                                         $next_url,
+				                                                                                                                         0,
+				                                                                                                                         7
+			                                                                                                                         ) != "mailto:" )
+			) {
+				$next_url = @$this->rel2abs( $next_url, $url );
 			}
 			
-			if ( substr( $url, 0, 1 ) == '/' ) {
-				$url = SITE_SCHEME . "://" . SITE_HOST . $url;
-			} else {
+			$next_url = filter_var( $next_url, FILTER_SANITIZE_URL );
+			
+			if ( substr( $next_url, 0, strlen( $this->site ) ) == $this->site ) {
+				$ignore = false;
 				
-				$path = parse_url( $url_base, PHP_URL_PATH );
+				if ( !filter_var( $next_url, FILTER_VALIDATE_URL ) ) {
+					$ignore = true;
+				}
 				
-				if ( substr( $path, -1 ) == '/' ) {
-					$url = SITE_SCHEME . "://" . SITE_HOST . $path . $url;
-				} else {
-					$dirname = dirname( $path );
-					
-					if ( $dirname[ 0 ] != '/' ) {
-						$dirname = "/$dirname";
+				if ( in_array( $next_url, $this->scanned ) ) {
+					$ignore = true;
+				}
+				
+				$pi = pathinfo( parse_url( $next_url )[ 'path' ], PATHINFO_EXTENSION );
+				
+				if ( !in_array( $pi, $this->extensions ) && ( $pi != "" || $pi = null ) ) {
+					$ignore = true;
+				}
+				
+				if ( isset ( $this->skip_urls ) && !$ignore ) {
+					foreach ( $this->skip_urls as $v ) {
+						if ( substr( $next_url, 0, strlen( $v ) ) == $v ) {
+							$ignore = true;
+						}
 					}
-					
-					if ( substr( $dirname, -1 ) != '/' ) {
-						$dirname = "$dirname/";
+				}
+				
+				if ( !$ignore ) {
+					foreach ( $this->extensions as $ext ) {
+						if ( strpos( $next_url, $ext ) > 0 ) {
+							$this->urls[] = htmlentities( $next_url );
+							$this->scan( $next_url );
+						}
 					}
-					
-					$url = SITE_SCHEME . "://" . SITE_HOST . $dirname . $url;
 				}
 			}
 		}
-		
-		$url = $this->getEffectiveUrl( $url );
-		
-		if ( in_array( $url, $this->urls ) )
-			return false;
-		
-		return $url;
 	}
 	
-	/**
-	 * @param $url
-	 *
-	 * @return bool
-	 */
-	private function skipUrl( $url )
-	{
-		if ( isset ( $this->skip_urls ) ) {
-			foreach ( $this->skip_urls as $v ) {
-				if ( substr( $url, 0, strlen( $v ) ) == $v )
-					return true;
-			}
-		}
-		
-		return false;
-	}
-	
-	/**
-	 * @param $url
-	 *
-	 * @return bool
-	 */
-	private function scan( $url )
-	{
-		$this->urls[] = $url;
-		
-		if ( $this->skipUrl( $url ) ) {
-			return false;
-		}
-		
-		if ( substr( $url, -2 ) == "//" ) {
-			$url = substr( $url, 0, -2 );
-		}
-		if ( substr( $url, -1 ) == "/" ) {
-			$url = substr( $url, 0, -1 );
-		}
-		
-		$headers = get_headers( $url, 1 );
-		
-		if ( strpos( $headers[ 0 ], "404" ) !== false ) {
-			return false;
-		}
-		
-		if ( strpos( $headers[ 0 ], "301" ) !== false ) {
-			$url = $headers[ "Location" ];
-		} else if ( strpos( $headers[ 0 ], "200" ) == false ) {
-			$url = $headers[ "Location" ];
-			
-			return false;
-		}
-		
-		if ( is_array( $headers[ "Content-Type" ] ) ) {
-			$content = explode( ";", $headers[ "Content-Type" ][ 0 ] );
-		} else {
-			$content = explode( ";", $headers[ "Content-Type" ] );
-		}
-		
-		$content_type = trim( strtolower( $content[ 0 ] ) );
-		
-		if ( $content_type != "text/html" ) {
-			if ( $content_type == "" && $this->ignoreemptycontenttype ) {
-				
-			} else {
-				if ( $content_type == "" ) {
-				} else {
-				}
-				
-				return false;
-			}
-		}
-		
-		$html = $this->getPage( $url );
-		$html = trim( $html );
-		if ( $html == "" )
-			return true;
-		
-		$html = str_replace( "\r", " ", $html );
-		$html = str_replace( "\n", " ", $html );
-		$html = str_replace( "\t", " ", $html );
-		$html = str_replace( "<A ", "<a ", $html );
-		
-		$first_anchor = strpos( $html, "<a " );
-		
-		if ( $first_anchor === false )
-			return true;
-		
-		$html = substr( $html, $first_anchor );
-		
-		$a1 = explode( "<a ", $html );
-		foreach ( $a1 as $next_url ) {
-			$next_url = trim( $next_url );
-			
-			if ( $next_url == "" )
-				continue;
-			
-			$next_url = $this->getHrefValue( $next_url );
-			
-			$next_url = $this->validateUrl( $url, $next_url );
-			
-			if ( $next_url == false )
-				continue;
-			
-			if ( $this->scan( $next_url ) ) {
-				fwrite(
-					$this->pf,
-					"  <url>\n" . "    <loc>" . htmlentities(
-						$next_url
-					) . "</loc>\n" . "    <changefreq>" . $this->frequency . "</changefreq>\n" . "    <priority>" . $this->priority . "</priority>\n" . "  </url>\n"
-				);
-			}
-		}
-		
-		return true;
-	}
 	
 	/**
 	 * @return bool
 	 */
 	public function generate()
 	{
-		define( "SITE_SCHEME", parse_url( $this->site, PHP_URL_SCHEME ) );
-		define( "SITE_HOST", parse_url( $this->site, PHP_URL_HOST ) );
-		
-		error_reporting( E_ERROR | E_WARNING | E_PARSE );
-		
 		$this->pf = fopen( $this->outputfile, "w" );
-		
 		if ( !$this->pf ) {
 			return false;
 		}
 		
+		$this->site = filter_var( $this->site, FILTER_SANITIZE_URL );
+		
 		fwrite(
 			$this->pf,
-			"<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" . "<!-- Created with SPQR Sitemap Generator " . $this->version . " https://spqr.wtf -->\n" . "<urlset xmlns=\"http://www.sitemaps.org/schemas/sitemap/0.9\"\n" . "        xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"\n" . "        xsi:schemaLocation=\"http://www.sitemaps.org/schemas/sitemap/0.9\n" . "        http://www.sitemaps.org/schemas/sitemap/0.9/sitemap.xsd\">\n" . "  <url>\n" . "    <loc>" . $this->site . "/</loc>\n" . "    <changefreq>" . $this->frequency . "</changefreq>\n" . "  </url>\n"
+			"<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" . "<!-- Created with SPQR Sitemap Generator " . $this->version . " https://spqr.wtf -->" . "<urlset xmlns=\"http://www.sitemaps.org/schemas/sitemap/0.9\"\n" . "        xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"\n" . "        xsi:schemaLocation=\"http://www.sitemaps.org/schemas/sitemap/0.9\n" . "        http://www.sitemaps.org/schemas/sitemap/0.9/sitemap.xsd\">\n" . "  <url>\n" . "    <loc>" . htmlentities(
+				$this->site
+			) . "</loc>\n" . "    <changefreq>$this->frequency</changefreq>\n" . "    <priority>$this->priority</priority>\n" . "  </url>\n"
 		);
 		
-		$this->scan( $this->getEffectiveUrl( $this->site ) );
+		$this->scan( $this->site );
+		
+		$result = [];
+		
+		foreach ( $this->urls as $url ) {
+			$result[] = rtrim( $url, '/\\' );
+		}
+		
+		foreach ( array_unique( $result ) as $entry ) {
+			$pr = number_format(
+				round(
+					$this->priority / count(
+						explode(
+							"/",
+							trim(
+								str_ireplace(
+									[
+										"http://",
+										"https://"
+									],
+									"",
+									$entry
+								),
+								"/"
+							)
+						)
+					) + 0.5,
+					3
+				),
+				1
+			);
+			fwrite(
+				$this->pf,
+				"  <url>\n" . "    <loc>" . htmlentities(
+					$entry
+				) . "</loc>\n" . "    <changefreq>$this->frequency</changefreq>\n" . "    <priority
+  >$pr</priority
+  >\n" . "  </url>\n"
+			);
+		}
 		
 		fwrite( $this->pf, "</urlset>\n" );
 		fclose( $this->pf );

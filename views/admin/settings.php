@@ -42,7 +42,12 @@
 						</div>
 					</div>
 					<div class="uk-form-row">
-						<button class="uk-button uk-button-secondary uk-button-large" @click.prevent="generate">{{ 'Generate' | trans }}</button>
+						<button v-if="!progress" class="uk-button uk-button-secondary uk-button-large" @click.prevent="generate">
+							<span>{{ 'Generate' | trans }}</span>
+						</button>
+						<button v-else class="uk-button uk-button-secondary uk-button-large" disabled>
+							<span><i class="uk-icon-spinner uk-icon-spin"></i> {{ 'Crawling' | trans }}</span>
+						</button>
 					</div>
 				</li>
 				<li>

@@ -3,7 +3,8 @@ window.settings = {
     el: '#settings',
 
     data: {
-        config: $data.config
+        config: $data.config,
+        progress: false
     },
 
     methods: {
@@ -33,11 +34,14 @@ window.settings = {
             this.config.excluded.$remove(exclusion);
         },
         generate: function () {
+            this.progress = true;
             this.$notify('Sitemap-generation is in progress. Please stand by until the "Sitemap generated"-message shows up.', {status:'warning', timeout: 0});
             this.$http.post('/admin/sitemap/generate').then(function (data) {
                     this.$notify('Sitemap generated.', {status:'success', timeout: 0});
+                    this.progress = false;
                 }, function (data) {
                     this.$notify(data, 'danger');
+                    this.progress = false;
                 }
             );
         }

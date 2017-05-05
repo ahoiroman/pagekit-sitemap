@@ -1,5 +1,13 @@
 # Changelog
 
+## 1.0.6
+
+- ADD: New icon
+
+## 1.0.5
+
+- FIX: Minor fixes
+
 ## 1.0.4
 
 - FIX: Improves crawling-speed

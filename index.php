@@ -48,12 +48,15 @@ return [
 	
 	'settings' => '@sitemap/settings',
 	
+	'resources' => [
+		'sitemap:' => ''
+	],
+	
 	'config' => [
 		'frequency' => 'weekly',
-		'filename' => 'sitemap.xml',
+		'filename'  => 'sitemap.xml',
 		'excluded'  => []
 	],
 	
-	'events' => [
-	]
+	'events' => []
 ];

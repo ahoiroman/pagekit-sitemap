@@ -1,6 +1,6 @@
 {
   "name": "spqr/sitemap",
-  "version": "1.0.4",
+  "version": "1.0.6",
   "type": "pagekit-extension",
   "title": "Sitemap Generator",
   "description": "Generates a sitemap",

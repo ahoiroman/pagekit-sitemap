@@ -167,9 +167,14 @@ class SitemapHelper
 			return;
 		}
 		
-		array_push( $this->scanned, $url );
-		$html = HtmlDomParser::str_get_html( $this->getURL( $url ) );
-		$a1   = $html->find( 'a' );
+		$this->scanned[] = $url;
+		$html            = HtmlDomParser::str_get_html( $this->getURL( $url ) );
+		
+		if($html === false) {
+			return; //TODO: Dirty workaround. We can do better...
+		}
+		
+		$a1              = $html->find( 'a' );
 		
 		foreach ( $a1 as $val ) {
 			$next_url = $val->href or "";

@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.0.7
+
+- ADD: Russian translation (Thank you, Dmitry Aronov/Glaicer for translating)
+- FIX: Created a workaround that prevents the extension from crashing if the HtmlDomParser returns an invalid value
+
 ## 1.0.6
 
 - ADD: New icon

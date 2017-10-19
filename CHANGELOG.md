@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.0.8
+
+- FIX: Adds better handling on sites, that return HTTP 404 status
+
 ## 1.0.7
 
 - ADD: Russian translation (Thank you, Dmitry Aronov/Glaicer for translating)

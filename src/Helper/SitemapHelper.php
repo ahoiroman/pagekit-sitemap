@@ -150,11 +150,19 @@ class SitemapHelper
 		curl_setopt( $ch, CURLOPT_CONNECTTIMEOUT, 5 );
 		
 		$data = curl_exec( $ch );
+		$http_code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
 		
 		curl_close( $ch );
 		
+		if($http_code == 404){
+			if (($key = array_search($url, $this->urls)) !== false) {
+				unset($this->urls[$key]);
+			}
+		}
+		
 		return $data;
 	}
+	
 	
 	/**
 	 * @param $url
@@ -178,7 +186,6 @@ class SitemapHelper
 		
 		foreach ( $a1 as $val ) {
 			$next_url = $val->href or "";
-			
 			$fragment_split = explode( "#", $next_url );
 			$next_url       = $fragment_split[ 0 ];
 			

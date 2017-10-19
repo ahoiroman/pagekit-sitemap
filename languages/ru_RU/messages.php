@@ -1,4 +1,6 @@
-<?php return [
+<?php
+
+return [
 	'Sitemap Settings'                                                                                   => 'Настройки приложения',
 	'Exclusions'                                                                                         => 'Исключения',
 	'Frequency'                                                                                          => 'Частота обновления',

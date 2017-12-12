@@ -30,8 +30,9 @@ return [
 			'label'  => 'Sitemap',
 			'url'    => '@sitemap',
 			'active' => '@sitemap(/*)?',
-			'icon'   => 'sitemap:icon.svg'
-		],
+			'icon'   => 'sitemap:icon.svg',
+            'access' => 'sitemap: manage settings'
+        ],
 		'sitemap: settings' => [
 			'parent' => 'sitemap',
 			'label'  => 'Settings',

@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.0.9
+
+- FIX: Fixes permissions (Issue #3)
+
+
 ## 1.0.8
 
 - FIX: Adds better handling on sites, that return HTTP 404 status

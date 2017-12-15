@@ -1,9 +1,12 @@
 # Changelog
 
+## 1.0.10
+
+- FIX: Fixes possible bug in routing
+
 ## 1.0.9
 
 - FIX: Fixes permissions (Issue #3)
-
 
 ## 1.0.8
 

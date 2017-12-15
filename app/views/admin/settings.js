@@ -36,7 +36,7 @@ window.settings = {
         generate: function () {
             this.progress = true;
             this.$notify('Sitemap-generation is in progress. Please stand by until the "Sitemap generated"-message shows up.', {status:'warning', timeout: 0});
-            this.$http.post('/admin/sitemap/generate').then(function (data) {
+			this.$http.post ('admin/sitemap/generate').then (function (data) {
                     this.$notify('Sitemap generated.', {status:'success', timeout: 0});
                     this.progress = false;
                 }, function (data) {

@@ -7,7 +7,6 @@ return [
     'name' => 'sitemap',
     'type' => 'extension',
     'main' => function (Application $app) {
-        // bootstrap code
     },
     
     'autoload' => [
@@ -54,9 +53,12 @@ return [
     ],
     
     'config' => [
-        'frequency' => 'weekly',
-        'filename'  => 'sitemap.xml',
-        'excluded'  => [],
+        'frequency'      => 'weekly',
+        'filename'       => 'sitemap.xml',
+        'verifyssl'      => true,
+        'allowredirects' => true,
+        'debug'          => false,
+        'excluded'       => [],
     ],
     
     'events' => [],

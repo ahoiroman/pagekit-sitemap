@@ -42,6 +42,30 @@
 						</div>
 					</div>
 					<div class="uk-form-row">
+						<label for="form-verifyssl"
+						       class="uk-form-label">{{ 'Verify SSL' | trans }}</label>
+						<div class="uk-form-controls uk-form-controls-text">
+							<input id="form-verifyssl" type="checkbox"
+							       v-model="config.verifyssl">
+						</div>
+					</div>
+					<div class="uk-form-row">
+						<label for="form-allowredirects"
+						       class="uk-form-label">{{ 'Allow redirects' | trans }}</label>
+						<div class="uk-form-controls uk-form-controls-text">
+							<input id="form-allowredirects" type="checkbox"
+							       v-model="config.allowredirects">
+						</div>
+					</div>
+					<div class="uk-form-row">
+						<label for="form-debug"
+						       class="uk-form-label">{{ 'Enable debug mode' | trans }}</label>
+						<div class="uk-form-controls uk-form-controls-text">
+							<input id="form-debug" type="checkbox"
+							       v-model="config.debug">
+						</div>
+					</div>
+					<div class="uk-form-row">
 						<button v-if="!progress" class="uk-button uk-button-secondary uk-button-large" @click.prevent="generate">
 							<span>{{ 'Generate' | trans }}</span>
 						</button>

@@ -18,7 +18,17 @@ class SitemapHelper
     /**
      * @var
      */
+    private $config;
+    
+    /**
+     * @var
+     */
     private $client;
+    
+    /**
+     * @var array
+     */
+    private $clientparams = [];
     
     /**
      * @var
@@ -79,17 +89,16 @@ class SitemapHelper
         $protocol = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off'
             || $_SERVER['SERVER_PORT'] == 443) ? "https://" : "http://";
         $domain   = $_SERVER['HTTP_HOST'];
-        
-        $module = App::module('sitemap');
-        $config = $module->config;
-        
+    
+        $module           = App::module('sitemap');
+        $this->config     = $module->config;
         $this->client     = new Client();
-        $this->outputfile = $config['filename'];
+        $this->outputfile = $this->config['filename'];
         $this->site       = $protocol.$domain.'/';
-        $this->skip_urls  = $config['excluded'];
+        $this->skip_urls  = $this->config['excluded'];
         $this->urls       = [];
         $this->scanned    = [];
-        $this->frequency  = $config['frequency'];
+        $this->frequency  = $this->config['frequency'];
         $this->priority   = 0.5;
         $this->extensions = [
             ".html",
@@ -99,6 +108,20 @@ class SitemapHelper
         $this->version    = "2.0";
         $this->agent      = "Mozilla/5.0 (compatible; SPQR Sitemap Generator/"
             .$this->version.")";
+    
+        $this->clientparams['headers'] = ['User-Agent' => $this->agent];
+    
+        if ($this->config['verifyssl'] === false) {
+            $this->clientparams['verify'] = false;
+        }
+    
+        if ($this->config['allowredirects'] === true) {
+            $this->clientparams['allowredirects'] = true;
+        }
+    
+        if ($this->config['debug'] === true) {
+            $this->clientparams['debug'] = true;
+        }
     }
     
     /**
@@ -237,11 +260,7 @@ class SitemapHelper
     private function getURL($url)
     {
         try {
-            $data = $this->client->request('GET', $url, [
-                'headers' => [
-                    'User-Agent' => $this->agent,
-                ],
-            ]);
+            $data = $this->client->request('GET', $url, $this->clientparams);
             
             return $data->getBody();
             

@@ -7,6 +7,8 @@
 				<ul class="uk-nav uk-nav-side pk-nav-large" data-uk-tab="{ connect: '#tab-content' }">
 					<li><a><i class="pk-icon-large-settings uk-margin-right"></i> {{ 'General' | trans }}</a></li>
 					<li><a><i class="uk-icon-puzzle-piece uk-margin-right"></i> {{ 'Exclusions' | trans }}</a></li>
+					<li><a><i class="pk-icon-large-cone uk-margin-right"></i>
+							{{ 'Info' | trans }}</a></li>
 				</ul>
 			</div>
 		</div>
@@ -127,6 +129,42 @@
 						</li>
 					</ul>
 				</li>
+				<li>
+					<div class="uk-margin uk-flex uk-flex-space-between uk-flex-wrap"
+					     data-uk-margin>
+						<div data-uk-margin>
+							<h2 class="uk-margin-remove">{{ 'Info' | trans }}</h2>
+						</div>
+						<div data-uk-margin>
+							<button class="uk-button uk-button-primary"
+							        @click.prevent="save">{{ 'Save' | trans }}
+							</button>
+						</div>
+					</div>
+					<div class="uk-form-row">
+						<label class="uk-form-label">{{ 'Getting help' | trans }}</label>
+						<div class="uk-form-controls uk-form-controls-text">
+							<div class="uk-panel uk-panel-box">
+								<p>{{ 'You have problems using this extension? Join the Pagekit community forum.' | trans }}</p>
+								<a class="uk-button uk-width-1-1 uk-button-large"
+								   href="https://pagekit-forum.org"
+								   target="_blank">Pagekit Forum</a>
+							</div>
+						</div>
+					</div>
+					<div class="uk-form-row">
+						<label class="uk-form-label">{{ 'Donate' | trans }}</label>
+						<div class="uk-form-controls uk-form-controls-text">
+							<div class="uk-panel uk-panel-box">
+								<p>{{ 'Do you like my extensions? They are free. Of course I would like to get a donation, so if you want to, please open the donate link. You may find three possibilities to donate: PayPal, Patreon and Coinhive.' | trans }} </p>
+								<a class="uk-button uk-button-large uk-width-1-1 uk-button-primary"
+								   href="https://spqr.wtf/support-me"
+								   target="_blank">Donate</a>
+							</div>
+						</div>
+					</div>
+				</li>
+
 			</ul>
 		</div>
 	</div>

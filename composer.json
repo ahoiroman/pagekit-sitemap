@@ -16,6 +16,9 @@
     "scripts": "scripts.php"
   },
   "require": {
-    "sunra/php-simple-html-dom-parser": "1.5.2"
+    "sunra/php-simple-html-dom-parser": "1.5.2",
+    "guzzlehttp/guzzle": "^6.1",
+    "guzzlehttp/psr7": "^1.4",
+    "guzzlehttp/promises": "^1.0"
   }
 }

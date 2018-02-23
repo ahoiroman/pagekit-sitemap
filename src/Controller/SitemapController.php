@@ -23,16 +23,16 @@ class SitemapController
 	 */
 	public function settingsAction()
 	{
-		$module = App::module( 'sitemap' );
+        $module = App::module('spqr/sitemap');
 		$config = $module->config;
 		
 		return [
 			'$view' => [
-				'title' => __( 'Sitemap Settings' ),
-				'name'  => 'sitemap:views/admin/settings.php'
+                'title' => __( 'Sitemap Settings' ),
+                'name'  => 'spqr/sitemap:views/admin/settings.php',
 			],
 			'$data' => [
-				'config' => App::module( 'sitemap' )->config()
+                'config' => $config,
 			]
 		];
 	}
@@ -45,7 +45,7 @@ class SitemapController
 	 */
 	public function saveAction( $config = [] )
 	{
-		App::config()->set( 'sitemap', $config );
+        App::config()->set('spqr/sitemap', $config);
 		
 		return [ 'message' => 'success' ];
 	}

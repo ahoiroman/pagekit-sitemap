@@ -4,7 +4,7 @@ use Pagekit\Application;
 
 
 return [
-    'name' => 'sitemap',
+    'name' => 'spqr/sitemap',
     'type' => 'extension',
     'main' => function (Application $app) {
     },
@@ -29,7 +29,7 @@ return [
             'label'  => 'Sitemap',
             'url'    => '@sitemap',
             'active' => '@sitemap(/*)?',
-            'icon'   => 'sitemap:icon.svg',
+            'icon'   => 'spqr/sitemap:icon.svg',
             'access' => 'sitemap: manage settings',
         ],
         'sitemap: settings' => [
@@ -49,7 +49,7 @@ return [
     'settings' => '@sitemap/settings',
     
     'resources' => [
-        'sitemap:' => '',
+        'spqr/sitemap:' => '',
     ],
     
     'config' => [

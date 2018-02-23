@@ -1,4 +1,5 @@
-<?php $view->script( 'settings', 'sitemap:app/bundle/settings.js', [ 'vue' ] ); ?>
+<?php $view->script('settings', 'spqr/sitemap:app/bundle/settings.js',
+    ['vue']); ?>
 
 <div id="settings" class="uk-form uk-form-horizontal" v-cloak>
 	<div class="uk-grid pk-grid-large" data-uk-grid-margin>
@@ -6,7 +7,9 @@
 			<div class="uk-panel">
 				<ul class="uk-nav uk-nav-side pk-nav-large" data-uk-tab="{ connect: '#tab-content' }">
 					<li><a><i class="pk-icon-large-settings uk-margin-right"></i> {{ 'General' | trans }}</a></li>
-					<li><a><i class="uk-icon-puzzle-piece uk-margin-right"></i> {{ 'Exclusions' | trans }}</a></li>
+					<li>
+						<a><i class="pk-icon-large-lock-file uk-margin-right"></i> {{ 'Exclusions'
+							| trans }}</a></li>
 					<li><a><i class="pk-icon-large-cone uk-margin-right"></i>
 							{{ 'Info' | trans }}</a></li>
 				</ul>
@@ -159,7 +162,7 @@
 								<p>{{ 'Do you like my extensions? They are free. Of course I would like to get a donation, so if you want to, please open the donate link. You may find three possibilities to donate: PayPal, Patreon and Coinhive.' | trans }} </p>
 								<a class="uk-button uk-button-large uk-width-1-1 uk-button-primary"
 								   href="https://spqr.wtf/support-me"
-								   target="_blank">Donate</a>
+								   target="_blank">{{ 'Donate' | trans }}</a>
 							</div>
 						</div>
 					</div>

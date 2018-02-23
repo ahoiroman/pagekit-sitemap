@@ -90,7 +90,7 @@ class SitemapHelper
             || $_SERVER['SERVER_PORT'] == 443) ? "https://" : "http://";
         $domain   = $_SERVER['HTTP_HOST'];
     
-        $module           = App::module('sitemap');
+        $module           = App::module('spqr/sitemap');
         $this->config     = $module->config;
         $this->client     = new Client();
         $this->outputfile = $this->config['filename'];

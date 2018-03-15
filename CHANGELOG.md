@@ -1,5 +1,16 @@
 # Changelog
 
+## 1.0.12
+
+- FIX: Fixed response handling. Generator handles error 500 better now.
+
+## 1.0.11
+
+- ADD: Make use of GuzzleHttpClient
+- ADD: Added additional parameters
+- ADD: Added Info-Tab to the settings
+- FIX: Namespaced extension/extension's config
+
 ## 1.0.10
 
 - FIX: Fixes possible bug in routing

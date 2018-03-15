@@ -1,7 +1,7 @@
 {
   "name": "spqr/sitemap",
   "module": "spqr/sitemap",
-  "version": "1.0.10",
+  "version": "1.0.12",
   "type": "pagekit-extension",
   "title": "Sitemap Generator",
   "description": "Generates a sitemap",
@@ -20,6 +20,7 @@
     "sunra/php-simple-html-dom-parser": "1.5.2",
     "guzzlehttp/guzzle": "^6.1",
     "guzzlehttp/psr7": "^1.4",
-    "guzzlehttp/promises": "^1.0"
+    "guzzlehttp/promises": "^1.0",
+    "psr/http-message": "^1.0"
   }
 }

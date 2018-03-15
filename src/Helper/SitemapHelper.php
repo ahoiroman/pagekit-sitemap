@@ -5,7 +5,7 @@ namespace Spqr\Sitemap\Helper;
 use Pagekit\Application as App;
 use Sunra\PhpSimple\HtmlDomParser;
 use GuzzleHttp\Client;
-use GuzzleHttp\Exception\ClientException;
+use GuzzleHttp\Exception\BadResponseException;
 
 
 /**
@@ -263,8 +263,8 @@ class SitemapHelper
             $data = $this->client->request('GET', $url, $this->clientparams);
             
             return $data->getBody();
-            
-        } catch (ClientException $e) {
+    
+        } catch (BadResponseException $e) {
             if (($key = array_search($url, $this->urls)) !== false) {
                 unset($this->urls[$key]);
             }
